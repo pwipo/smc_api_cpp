@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #ifndef SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
 #define SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
@@ -253,6 +254,18 @@ namespace SMCAPI {
         MULTIPART,
         CALLER,
         CALLER_RELATIVE_NAME
+    };
+
+    /**
+     * Source filter type
+     *
+     * @version 1.0.0
+     */
+    enum SourceFilterType {
+        POSITION,
+        NUMBER,
+        STRING_EQUAL,
+        STRING_CONTAIN
     };
 
     /**
@@ -636,12 +649,120 @@ namespace SMCAPI {
 
     };
 
+    class CLASS_DECLSPEC CFGISource;
+
+    class CLASS_DECLSPEC CFGISourceManaged;
+
+    /**
+     * Interface for Source multipart
+     *
+     * @version 1.0.0
+     */
+    class CLASS_DECLSPEC CFGISourceList {
+    public:
+
+        /**
+         * count sources
+         *
+         * @return int
+         */
+        virtual long countSource() = 0;
+
+        /**
+         * get source
+         *
+         * @param id                    serial number in the list of sources
+         * @return CFGISource or null
+         */
+        virtual CFGISource *getSource(long) = 0;
+
+    };
+
+    class CLASS_DECLSPEC CFGIExecutionContext;
+
+    /**
+     * Interface for Managed Source multipart
+     *
+     * @version 1.0.0
+     */
+    class CLASS_DECLSPEC CFGISourceListManaged : virtual public CFGISourceList {
+    public:
+
+        /**
+         * create source and bind it to this execution context
+         * add source to end of current list (order = max_order + 1)
+         * created ContextSourceType is MODULE_CONFIGURATION
+         *
+         * @param configuration         configuration source.
+         * @param getType               type of get commands from source.
+         * @param countLast             only for ContextSourceGetType.LAST. minimum 1.
+         * @return CFGISourceManaged
+         */
+        virtual CFGISourceManaged *createSourceConfiguration(CFGIConfiguration *, SourceGetType, long, bool) = 0;
+
+        /**
+         * create source and bind it to this execution context
+         * add source to end of current list (order = max_order + 1)
+         * created ContextSourceType is EXECUTION_CONTEXT
+         *
+         * @param executionContext      execution context source.
+         * @param getType               type of get commands from source.
+         * @param countLast             only for ContextSourceGetType.LAST. minimum 1.
+         * @param eventDriven           if true, then source is event driven
+         * @return CFGISourceManage
+         */
+        virtual CFGISourceManaged *createSourceExecutionContext(CFGIExecutionContext *, SourceGetType, long, bool) = 0;
+
+        /**
+         * create source and bind it to this execution context
+         * add source to end of current list (order = max_order + 1)
+         * created ContextSourceType is STATIC_VALUE
+         *
+         * @param value                 value (String, Number or byte array)
+         * @return CFGISourceManage
+         */
+        virtual CFGISourceManaged *createSourceValue(IValue *) = 0;
+
+        /**
+         * create source and bind it to this execution context
+         * add source to end of list (order = max_order + 1)
+         * created ContextSourceType is MULTIPART
+         *
+         * @return CFGISourceManage
+         */
+        virtual CFGISourceManaged *createSourceMultipart() = 0;
+
+        /**
+         * remove source from list
+         *
+         * @param id                    serial number in the list of sources
+         */
+        virtual void removeSource(long) = 0;
+
+        /**
+         * get managed source list
+         *
+         * @param id serial number in the list of sources
+         * @return CFGISourceListManaged or null
+         */
+        virtual CFGISourceListManaged *getSourceListManaged(long) = 0;
+
+        /**
+         * get managed source
+         *
+         * @param id serial number in the list of sources
+         * @return CFGISourceManaged or null
+         */
+        virtual CFGISourceManaged *getSourceManaged(long) = 0;
+
+    };
+
     /**
      * Interface for Execution Context
      *
      * @version 1.0.0
      */
-    class CLASS_DECLSPEC CFGIExecutionContext {
+    class CLASS_DECLSPEC CFGIExecutionContext : virtual public CFGISourceList {
     public:
         /**
          * get configuration
@@ -673,104 +794,12 @@ namespace SMCAPI {
 
     };
 
-    class CLASS_DECLSPEC CFGISource;
-
-    /**
-     * Interface for Source multipart
-     *
-     * @version 1.0.0
-     */
-    class CLASS_DECLSPEC CFGISourceList {
-    public:
-
-        /**
-         * count sources
-         *
-         * @return int
-         */
-        virtual long countSources() = 0;
-
-        /**
-         * get source
-         *
-         * @param id                    serial number in the list of sources
-         * @return CFGISource or null
-         */
-        virtual CFGISource *getSource(long) = 0;
-
-        /**
-         * create source and bind it to this execution context
-         * add source to end of current list (order = max_order + 1)
-         * created ContextSourceType is MODULE_CONFIGURATION
-         *
-         * @param configuration         configuration source.
-         * @param getType               type of get commands from source.
-         * @param countLast             only for ContextSourceGetType.LAST. minimum 1.
-         * @return CFGISource
-         */
-        virtual CFGISource *createSourceConfiguration(CFGIConfiguration *, SourceGetType, long, bool) = 0;
-
-        /**
-         * create source and bind it to this execution context
-         * add source to end of current list (order = max_order + 1)
-         * created ContextSourceType is EXECUTION_CONTEXT
-         *
-         * @param executionContext      execution context source.
-         * @param getType               type of get commands from source.
-         * @param countLast             only for ContextSourceGetType.LAST. minimum 1.
-         * @param eventDriven           if true, then source is event driven
-         * @return CFGISource
-         */
-        virtual CFGISource *createSourceExecutionContext(CFGIExecutionContext *, SourceGetType, long, bool) = 0;
-
-        /**
-         * create source and bind it to this execution context
-         * add source to end of current list (order = max_order + 1)
-         * created ContextSourceType is STATIC_VALUE
-         *
-         * @param value                 value (String, Number or byte array)
-         * @return CFGISource
-         */
-        virtual CFGISource *createSourceValue(IValue *) = 0;
-
-        /**
-         * create source and bind it to this execution context
-         * add source to end of list (order = max_order + 1)
-         * created ContextSourceType is MULTIPART
-         *
-         * @return CFGISource
-         */
-        virtual CFGISource *createSourceMultipart() = 0;
-
-        /**
-         * change order - up.
-         *
-         * @param id                    serial number in the list of sources
-         */
-        virtual void changeOrderUp(long) = 0;
-
-        /**
-         * change order - down.
-         *
-         * @param id                    serial number in the list of sources
-         */
-        virtual void changeOrderDown(long) = 0;
-
-        /**
-         * remove source from list
-         *
-         * @param id                    serial number in the list of sources
-         */
-        virtual void removeSource(long) = 0;
-
-    };
-
     /**
      * Interface for Managed Execution Context
      *
      * @version 1.0.0
      */
-    class CLASS_DECLSPEC CFGIExecutionContextManaged : virtual public CFGIExecutionContext, virtual public CFGISourceList {
+    class CLASS_DECLSPEC CFGIExecutionContextManaged : virtual public CFGIExecutionContext, virtual public CFGISourceListManaged {
     public:
 
         /**
@@ -859,6 +888,43 @@ namespace SMCAPI {
     };
 
     /**
+     * Interface for Source filter
+     *
+     * @version 1.0.0
+     */
+    class CLASS_DECLSPEC CFGISourceFilter {
+    public:
+
+        /**
+         * get type.
+         *
+         * @return SourceFilterType
+         */
+        virtual SourceFilterType getType() = 0;
+
+        /**
+         * count params
+         *
+         * @return int
+         */
+        virtual long countParams() = 0;
+
+        /**
+         * get param
+         * params may have any types, depends on the SourceFilterType and id
+         *
+         * @param id serial number in the list of filter params
+         * @return Object depend on type:
+         * POSITION: std::vector<std::unique_ptr<long>>* (n*2 elements: from - inclusive and to - exclusive for range or position and nullptr), long* (period length, if greater than zero, then defines the set within which the previous list values apply), long* (count periods, determines the number of periods), long* (start offset, before the first period)
+         * NUMBER: double* (min, inclusive), double* (max, inclusive)
+         * STRING_EQUAL: boolean* (type, if true then need equals, also, not equal), std::wstring* (value for compare)
+         * STRING_CONTAIN: boolean* (type, if true then need contain, also, not contain), std::wstring* (value)
+         */
+        virtual void *getParam(long) = 0;
+
+    };
+
+    /**
      * Interface for Source
      *
      * @version 1.0.0
@@ -874,41 +940,110 @@ namespace SMCAPI {
         virtual SourceType getType() = 0;
 
         /**
-         * get value
-         * depend on type
-         *
-         * @return CFGIConfiguration for MODULE_CONFIGURATION, CFGIExecutionContext for EXECUTION_CONTEXT, IValue for STATIC_VALUE, NULL for MULTIPART
-         */
-        virtual void *getValue() = 0;
-
-        /**
-         * get order.
-         * determines the position in the source list.
+         * count params
          *
          * @return int
          */
-        virtual long getOrder() = 0;
+        virtual long countParams() = 0;
 
         /**
-         * is source event driven.
+         * get param
+         * params may have any types, depends on the SourceType and id
          *
-         * @return true if it is true
+         * @param id serial number in the list of source params
+         * @return Object depend on type:
+         * MODULE_CONFIGURATION: CFGIConfiguration* configuration (source), SourceGetType* getType (type of get commands from source), long* countLast (only for ContextSourceGetType.LAST. minimum 1), bool* eventDriven (is event driven)
+         * EXECUTION_CONTEXT: CFGIExecutionContext* executionContext (source), SourceGetType* getType (type of get commands from source), long* countLast (only for ContextSourceGetType.LAST. minimum 1), bool* eventDriven (is event driven)
+         * STATIC_VALUE: IValue* (String, Number or byte array)
+         * MULTIPART: null
+         * CALLER_RELATIVE_NAME: string (caller level cfg name)
          */
-        virtual bool isEventDriven() = 0;
+        virtual void *getParam(long) = 0;
 
         /**
-         * get source list
-         * @return CFGISourceList for MULTIPART or null
+         * count filters
+         *
+         * @return int
          */
-        virtual CFGISourceList *getList() = 0;
+        virtual long countFilters() = 0;
+
+        /**
+         * get filter
+         *
+         * @param id serial number in the list of Filters
+         * @return CFGISourceFilter or null
+         */
+        virtual CFGISourceFilter *getFilter(long) = 0;
 
     };
 
     /**
-     * tool for work with unmodifiable files
+     * Interface for Managed Source multipart
      *
      * @version 1.0.0
      */
+    class CLASS_DECLSPEC CFGISourceManaged : virtual public CFGISource {
+    public:
+        /**
+         * Create position filter and bind it to this source
+         * add filter to end of current list (order = max_order + 1)
+         * only for MODULE_CONFIGURATION and EXECUTION_CONTEXT SourceType
+         *
+         * @param range        n*2 elements: from - inclusive and to - exclusive for range or position and null
+         * @param period       period length, if greater than zero, then defines the set within which the previous list values apply
+         * @param countPeriods determines the number of periods
+         * @param startOffset  before the first period
+         * @return CFGISourceFilter
+         */
+        virtual CFGISourceFilter *createFilter(std::vector<std::unique_ptr<long>> *, long, long, long) = 0;
+
+        /**
+         * Create number filter and bind it to this source
+         * add filter to end of current list (order = max_order + 1)
+         * only for MODULE_CONFIGURATION and EXECUTION_CONTEXT SourceType
+         *
+         * @param min inclusive
+         * @param max inclusive
+         * @return CFGISourceFilter
+         */
+        virtual CFGISourceFilter *createFilter(double, double) = 0;
+
+        /**
+         * Create string equal filter and bind it to this source
+         * add filter to end of current list (order = max_order + 1)
+         * only for MODULE_CONFIGURATION and EXECUTION_CONTEXT SourceType
+         *
+         * @param needEquals if true then need equals, also, not equal
+         * @param value      value for compare
+         * @return CFGISourceFilter
+         */
+        virtual CFGISourceFilter *createFilterStrEq(bool, std::wstring &) = 0;
+
+        /**
+         * Create string contain filter and bind it to this source
+         * add filter to end of current list (order = max_order + 1)
+         * only for MODULE_CONFIGURATION and EXECUTION_CONTEXT SourceType
+         *
+         * @param needContain if true then need contain, also, not contain
+         * @param value       value for compare
+         * @return CFGISourceFilter
+         */
+        virtual CFGISourceFilter *createFilterStrContain(bool, std::wstring &) = 0;
+
+        /**
+         * remove filter from list
+         *
+         * @param id serial number in the list of filters
+         */
+        virtual void removeFilter(long) = 0;
+
+    };
+
+    /**
+ * tool for work with unmodifiable files
+ *
+ * @version 1.0.0
+ */
     class CLASS_DECLSPEC IFileTool {
     public:
         /**
