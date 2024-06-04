@@ -1,4 +1,6 @@
 # smc_api_cpp
-smc api for cpp for windows
+SMC API for C++
+<br/>
+ver 1.4.0
 <br/>
 site: http://www.smcsystem.ru
