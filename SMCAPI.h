@@ -27,14 +27,11 @@ namespace SMCApi {
     private:
         const std::wstring message;
     public:
-        ModuleException(const std::wstring &msg) : message(msg) {}
+        explicit ModuleException(const std::wstring &msg);
 
-        const std::wstring *getMessage() const {
-            return &message;
-        }
+        const std::wstring *getMessage() const;
 
-        ~ModuleException() override {
-        }
+        ~ModuleException() override;
     };
 
     /**
@@ -73,26 +70,26 @@ namespace SMCApi {
      *
      * @version 1.0.0
      */
-    class Number {
+    class CLASS_DECLSPEC Number {
     private:
         void *pValue;
         NumberType type;
     public:
-        Number(signed char value);
+        explicit Number(signed char value);
 
-        Number(short value);
+        explicit Number(short value);
 
-        Number(long value);
+        explicit Number(long value);
 
-        Number(long long int value);
+        explicit Number(long long int value);
 
-        Number(float value);
+        explicit Number(float value);
 
-        Number(double value);
+        explicit Number(double value);
 
         Number(NumberType type, char *valueString);
 
-        Number(const Number *pNumber);
+        explicit Number(const Number *pNumber);
 
         ~Number();
 
@@ -110,7 +107,7 @@ namespace SMCApi {
 
         std::string toString();
 
-        NumberType getType() const;
+        NumberType getType();
     };
 
     /**
@@ -142,6 +139,8 @@ namespace SMCApi {
     ValueType convertToValue(NumberType type);
 
     NumberType convertToNumber(ValueType type);
+
+    ValueType convertToValue(ObjectType type);
 
     class CLASS_DECLSPEC ObjectElement;
 
@@ -191,7 +190,7 @@ namespace SMCApi {
          *
          * @return long
          */
-        virtual long getBytesCount() = 0;
+        virtual size_t getBytesCount() = 0;
 
         /**
          * value as byte array
@@ -222,16 +221,19 @@ namespace SMCApi {
     class CLASS_DECLSPEC ObjectField {
     private:
         std::wstring name;
-        void *pValue{};
+        void *pValue;
         ObjectType type;
+        size_t valueBytesLength;
     public:
+        ObjectField(const std::wstring &name);
+
         ObjectField(const std::wstring &name, ObjectType type);
 
         ObjectField(const std::wstring &name, const std::wstring *value);
 
         ObjectField(const std::wstring &name, const Number *value);
 
-        ObjectField(const std::wstring &name, const signed char *value);
+        ObjectField(const std::wstring &name, const signed char *value, size_t size);
 
         ObjectField(const std::wstring &name, bool value);
 
@@ -239,7 +241,7 @@ namespace SMCApi {
 
         ObjectField(const std::wstring &name, const ObjectElement *value);
 
-        ObjectField(const ObjectField *objectField);
+        explicit ObjectField(const ObjectField *objectField);
 
         const std::wstring &getName() const;
 
@@ -247,15 +249,15 @@ namespace SMCApi {
 
         bool isNull();
 
-        void setValueNull(const ObjectType type);
+        void setValueNull(ObjectType type);
 
         void setValue(const std::wstring *value);
 
         void setValue(const Number *value);
 
-        void setValue(const signed char *value);
+        void setValue(const signed char *value, size_t size);
 
-        void setValue(const bool value);
+        void setValue(bool value);
 
         void setValue(const ObjectArray *value);
 
@@ -279,6 +281,8 @@ namespace SMCApi {
 
         const ObjectElement *getValueObjectElement() const;
 
+        const void *getValue() const;
+
         ObjectType getType() const;
 
         bool isSimple();
@@ -298,11 +302,13 @@ namespace SMCApi {
     private:
         std::vector<ObjectField *> fields;
     public:
-        ObjectElement(const std::vector<ObjectField *> &fields);
+        explicit ObjectElement(const std::vector<ObjectField *> &fields);
 
-        ObjectElement(const ObjectElement *objectElement);
+        explicit ObjectElement(const ObjectElement *objectElement);
 
-        const std::vector<ObjectField *> &getFields() const;
+        explicit ObjectElement();
+
+        std::vector<ObjectField *> *getFields();
 
         ObjectField *findField(const std::wstring &name);
 
@@ -326,16 +332,19 @@ namespace SMCApi {
     private:
         std::vector<void *> objects;
         std::vector<ObjectType> *types;
+        std::vector<size_t> *sizes;
         ObjectType type;
 
-        void add(void *pValue, const ObjectType type, int id = -1);
+        void add(void *pValue, ObjectType type, int id = -1, size_t size = 0);
+
+        void addCopy(void *pValue, ObjectType type, size_t size = 0);
 
         void deleteItem(int id);
 
     public:
-        ObjectArray(const ObjectType type);
+        explicit ObjectArray(ObjectType type);
 
-        ObjectArray(const ObjectArray *objectArray);
+        explicit ObjectArray(const ObjectArray *objectArray);
 
         size_t size() const;
 
@@ -343,7 +352,7 @@ namespace SMCApi {
 
         void add(const Number *value, int id = -1);
 
-        void add(const signed char *value, int id = -1);
+        void add(const signed char *value, size_t size, int id = -1);
 
         void add(const bool value, int id = -1);
 
@@ -365,9 +374,11 @@ namespace SMCApi {
 
         const ObjectElement *getObjectElement(int id) const;
 
+        const void *get(int id) const;
+
         void remove(int id);
 
-        const ObjectType getType(int id = -1) const;
+        ObjectType getType(int id = -1);
 
         bool isSimple();
 

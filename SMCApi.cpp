@@ -78,8 +78,9 @@ SMCApi::Number::Number(const SMCApi::Number *pNumber) {
             break;
         }
         case NumberType::NT_BIG_INTEGER: {
-            size_t size = sizeof((char *) pNumber->pValue);
-            pValue = new char[size];
+            size_t size = strlen((char *) pNumber->pValue);
+            pValue = new char[size + 1];
+            ((char *) pValue)[size] = 0;
             memcpy(pValue, pNumber->pValue, size);
             break;
         }
@@ -96,8 +97,9 @@ SMCApi::Number::Number(const SMCApi::Number *pNumber) {
             break;
         }
         case NumberType::NT_BIG_DECIMAL: {
-            size_t size = sizeof((char *) pNumber->pValue);
-            pValue = new char[size];
+            size_t size = strlen((char *) pNumber->pValue);
+            pValue = new char[size + 1];
+            ((char *) pValue)[size] = 0;
             memcpy(pValue, pNumber->pValue, size);
             break;
         }
@@ -126,7 +128,7 @@ SMCApi::Number::~Number() {
             break;
         case NumberType::NT_BIG_INTEGER:
         case NumberType::NT_BIG_DECIMAL:
-            delete (char *) pValue;
+            delete[] (char *) pValue;
             break;
     }
     pValue = nullptr;
@@ -314,7 +316,7 @@ std::string SMCApi::Number::toString() {
     return "";
 }
 
-SMCApi::NumberType SMCApi::Number::getType() const {
+SMCApi::NumberType SMCApi::Number::getType() {
     return type;
 }
 
@@ -344,8 +346,9 @@ SMCApi::ObjectType SMCApi::convertToObject(ValueType type) {
             return ObjectType::OT_OBJECT_ARRAY;
         case VT_BOOLEAN:
             return ObjectType::OT_BOOLEAN;
+        default:
+            return ObjectType::OT_INTEGER;
     }
-    return ObjectType::OT_INTEGER;
 }
 
 SMCApi::ObjectType SMCApi::convertToObject(NumberType type) {
@@ -366,8 +369,9 @@ SMCApi::ObjectType SMCApi::convertToObject(NumberType type) {
             return ObjectType::OT_DOUBLE;
         case NT_BIG_DECIMAL:
             return ObjectType::OT_BIG_DECIMAL;
+        default:
+            return ObjectType::OT_INTEGER;
     }
-    return ObjectType::OT_INTEGER;
 }
 
 SMCApi::ValueType SMCApi::convertToValue(SMCApi::NumberType type) {
@@ -388,8 +392,9 @@ SMCApi::ValueType SMCApi::convertToValue(SMCApi::NumberType type) {
             return ValueType::VT_DOUBLE;
         case NT_BIG_DECIMAL:
             return ValueType::VT_BIG_DECIMAL;
+        default:
+            return ValueType::VT_INTEGER;
     }
-    return ValueType::VT_INTEGER;
 }
 
 SMCApi::NumberType SMCApi::convertToNumber(SMCApi::ValueType type) {
@@ -410,8 +415,40 @@ SMCApi::NumberType SMCApi::convertToNumber(SMCApi::ValueType type) {
             return NumberType::NT_DOUBLE;
         case VT_BIG_DECIMAL:
             return NumberType::NT_BIG_DECIMAL;
+        default:
+            return NumberType::NT_INTEGER;
     }
-    return NumberType::NT_INTEGER;
+}
+
+SMCApi::ValueType SMCApi::convertToValue(SMCApi::ObjectType type) {
+    switch (type) {
+        case OT_OBJECT_ARRAY:
+            return ValueType::VT_OBJECT_ARRAY;
+        case OT_STRING:
+            return ValueType::VT_STRING;
+        case OT_BYTE:
+            return ValueType::VT_BYTE;
+        case OT_SHORT:
+            return ValueType::VT_SHORT;
+        case OT_INTEGER:
+            return ValueType::VT_INTEGER;
+        case OT_LONG:
+            return ValueType::VT_LONG;
+        case OT_FLOAT:
+            return ValueType::VT_FLOAT;
+        case OT_DOUBLE:
+            return ValueType::VT_DOUBLE;
+        case OT_BIG_INTEGER:
+            return ValueType::VT_BIG_INTEGER;
+        case OT_BIG_DECIMAL:
+            return ValueType::VT_BIG_DECIMAL;
+        case OT_BYTES:
+            return ValueType::VT_BYTES;
+        case OT_BOOLEAN:
+            return ValueType::VT_BOOLEAN;
+        default:
+            return ValueType::VT_INTEGER;
+    }
 }
 
 bool equalsCharIgnoreCase(char a, char b) {
@@ -424,33 +461,34 @@ bool equalsIgnoreCase(const std::wstring &a, const std::wstring &b) {
 }
 
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::ObjectType type) : name(name), pValue(nullptr), type(type) {}
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::ObjectType type) : name(name), pValue(nullptr), type(type),
+                                                                                            valueBytesLength(0) {}
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const std::wstring *value) : name(name) {
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const std::wstring *value) : name(name), pValue(nullptr), valueBytesLength(0) {
     setValue(value);
 }
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::Number *value) : name(name) {
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::Number *value) : name(name), pValue(nullptr), valueBytesLength(0) {
     setValue(value);
 }
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const signed char *value) : name(name) {
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const signed char *value, size_t size) : name(name), pValue(nullptr), valueBytesLength(0) {
     setValue(value);
 }
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const bool value) : name(name) {
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const bool value) : name(name), pValue(nullptr), valueBytesLength(0) {
     setValue(value);
 }
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::ObjectArray *value) : name(name) {
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::ObjectArray *value) : name(name), pValue(nullptr), valueBytesLength(0) {
     setValue(value);
 }
 
-SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::ObjectElement *value) : name(name) {
+SMCApi::ObjectField::ObjectField(const std::wstring &name, const SMCApi::ObjectElement *value) : name(name), pValue(nullptr), valueBytesLength(0) {
     setValue(value);
 }
 
-SMCApi::ObjectField::ObjectField(const SMCApi::ObjectField *objectField) : name(objectField->name) {
+SMCApi::ObjectField::ObjectField(const SMCApi::ObjectField *objectField) : name(objectField->name), pValue(nullptr), valueBytesLength(0) {
     setValue(objectField);
 }
 
@@ -479,14 +517,15 @@ void SMCApi::ObjectField::setValue(const std::wstring *value) {
 
 void SMCApi::ObjectField::setValue(const SMCApi::Number *value) {
     deleteValue();
-    type = (ObjectType) convertToObject(value->getType());
+    type = (ObjectType) convertToObject(((SMCApi::Number *) value)->getType());
     pValue = (void *) value;
 }
 
-void SMCApi::ObjectField::setValue(const signed char *value) {
+void SMCApi::ObjectField::setValue(const signed char *value, size_t size) {
     deleteValue();
     type = ObjectType::OT_BYTES;
     pValue = (void *) value;
+    valueBytesLength = size;
 }
 
 void SMCApi::ObjectField::setValue(const bool value) {
@@ -512,6 +551,9 @@ void SMCApi::ObjectField::setValue(const SMCApi::ObjectElement *value) {
 void SMCApi::ObjectField::setValue(const SMCApi::ObjectField *value) {
     deleteValue();
     type = value->type;
+    valueBytesLength = value->valueBytesLength;
+    if (((SMCApi::ObjectField *) value)->isNull())
+        return;
     switch (value->getType()) {
         case OT_STRING: {
             auto pStrNew = new std::wstring(*value->getValueString());
@@ -529,7 +571,7 @@ void SMCApi::ObjectField::setValue(const SMCApi::ObjectField *value) {
             pValue = new Number(value->getValueNumber());
             break;
         case OT_BYTES: {
-            long size = value->getBytesCount();
+            size_t size = value->getBytesCount();
             pValue = new char[size];
             memcpy(pValue, value->getValueBytes(), size);
             break;
@@ -545,6 +587,9 @@ void SMCApi::ObjectField::setValue(const SMCApi::ObjectField *value) {
             break;
         case OT_OBJECT_ELEMENT:
             pValue = new SMCApi::ObjectElement(value->getValueObjectElement());
+            break;
+        default:
+            pValue = nullptr;
             break;
     }
 }
@@ -569,9 +614,9 @@ void SMCApi::ObjectField::setValue(SMCApi::IValue *value) {
             pValue = new Number(value->getValueNumber());
             break;
         case VT_BYTES: {
-            long size = value->getBytesCount();
-            pValue = new char[size];
-            memcpy(pValue, value->getValueBytes(), size);
+            valueBytesLength = value->getBytesCount();
+            pValue = new char[valueBytesLength];
+            memcpy(pValue, value->getValueBytes(), valueBytesLength);
             break;
         }
         case VT_OBJECT_ARRAY:
@@ -619,7 +664,7 @@ size_t SMCApi::ObjectField::getBytesCount() const {
         std::wstring error(L"wrong type");
         throw ModuleException(error);
     }
-    return sizeof((signed char *) pValue);
+    return valueBytesLength;
 }
 
 bool SMCApi::ObjectField::getValueBoolean() const {
@@ -678,10 +723,12 @@ void SMCApi::ObjectField::deleteValue() {
             delete (std::wstring *) pValue;
             break;
         case OT_BYTES:
-            delete (signed char *) pValue;
+            delete[] (signed char *) pValue;
             break;
         case OT_BOOLEAN:
             delete (bool *) pValue;
+            break;
+        default:
             break;
     }
     pValue = nullptr;
@@ -691,6 +738,13 @@ SMCApi::ObjectField::~ObjectField() {
     deleteValue();
 }
 
+SMCApi::ObjectField::ObjectField(const std::wstring &name) : name(name), pValue(nullptr), type(ObjectType::OT_INTEGER) {
+}
+
+const void *SMCApi::ObjectField::getValue() const {
+    return pValue;
+}
+
 SMCApi::ObjectElement::ObjectElement(const std::vector<ObjectField *> &fields) : fields(fields) {}
 
 SMCApi::ObjectElement::ObjectElement(const SMCApi::ObjectElement *objectElement) {
@@ -698,8 +752,8 @@ SMCApi::ObjectElement::ObjectElement(const SMCApi::ObjectElement *objectElement)
         fields.push_back(new ObjectField(v));
 }
 
-const std::vector<SMCApi::ObjectField *> &SMCApi::ObjectElement::getFields() const {
-    return fields;
+std::vector<SMCApi::ObjectField *> *SMCApi::ObjectElement::getFields() {
+    return &fields;
 }
 
 SMCApi::ObjectField *SMCApi::ObjectElement::findField(const std::wstring &name) {
@@ -726,16 +780,63 @@ SMCApi::ObjectElement::~ObjectElement() {
     fields.clear();
 }
 
-void SMCApi::ObjectArray::add(void *pValue, const SMCApi::ObjectType type, int id) {
+SMCApi::ObjectElement::ObjectElement() {
+}
+
+void SMCApi::ObjectArray::add(void *pValue, const SMCApi::ObjectType type, int id, size_t size) {
     if (id == -1) {
         objects.push_back(pValue);
         if (types)
             types->push_back(type);
+        if (sizes)
+            sizes->push_back(size);
     } else {
         objects.insert(objects.begin() + id, pValue);
         if (types)
             types->insert(types->begin() + id, type);
+        if (sizes)
+            sizes->insert(sizes->begin() + id, size);
     }
+}
+
+void SMCApi::ObjectArray::addCopy(void *pValue, const SMCApi::ObjectType type, size_t size) {
+    switch (type) {
+        case OT_OBJECT_ARRAY:
+            pValue = new ObjectArray((ObjectArray *) pValue);
+            break;
+        case OT_OBJECT_ELEMENT:
+            pValue = new ObjectElement((ObjectElement *) pValue);
+            break;
+        case OT_VALUE_ANY:
+            break;
+        case OT_STRING:
+            pValue = new std::wstring(*(std::wstring *) pValue);
+            break;
+        case OT_BYTE:
+        case OT_SHORT:
+        case OT_INTEGER:
+        case OT_LONG:
+        case OT_FLOAT:
+        case OT_DOUBLE:
+        case OT_BIG_INTEGER:
+        case OT_BIG_DECIMAL:
+            pValue = new Number((Number *) pValue);
+            break;
+        case OT_BYTES: {
+            long valueBytesLength = size;
+            auto oldValue = (signed char *) pValue;
+            pValue = new signed char[valueBytesLength];
+            memcpy(pValue, oldValue, valueBytesLength);
+            break;
+        }
+        case OT_BOOLEAN: {
+            auto value = *((bool *) pValue);
+            pValue = new bool;
+            *((bool *) pValue) = value;
+            break;
+        }
+    }
+    add(pValue, type, -1, size);
 }
 
 void SMCApi::ObjectArray::deleteItem(int id) {
@@ -763,34 +864,51 @@ void SMCApi::ObjectArray::deleteItem(int id) {
             delete (std::wstring *) pValue;
             break;
         case OT_BYTES:
-            delete (signed char *) pValue;
+            delete[] (signed char *) pValue;
             break;
         case OT_BOOLEAN:
             delete (bool *) pValue;
+            break;
+        default:
             break;
     }
     pValue = nullptr;
     objects.erase(objects.begin() + id);
     if (types && types->size() > id)
         types->erase(types->begin() + id);
+    if (sizes && sizes->size() > id)
+        sizes->erase(sizes->begin() + id);
 }
 
-SMCApi::ObjectArray::ObjectArray(const SMCApi::ObjectType type) : type(type), types(nullptr) {
+SMCApi::ObjectArray::ObjectArray(const SMCApi::ObjectType type) : type(type), types(nullptr), sizes(nullptr) {
     if (type == ObjectType::OT_VALUE_ANY)
         types = new std::vector<ObjectType>;
+    if (type == ObjectType::OT_BYTES || type == ObjectType::OT_VALUE_ANY)
+        sizes = new std::vector<size_t>;
 }
 
-SMCApi::ObjectArray::ObjectArray(const SMCApi::ObjectArray *objectArray) : type(objectArray->type), types(nullptr) {
+SMCApi::ObjectArray::ObjectArray(const SMCApi::ObjectArray *objectArray) : type(objectArray->type), types(nullptr), sizes(nullptr) {
+    std::vector<size_t> *sizesTmp = nullptr;
+    if (objectArray->sizes) {
+        sizes = new std::vector<size_t>;
+        sizesTmp = new std::vector<size_t>;
+        for (auto t: *(objectArray->sizes))
+            sizesTmp->push_back(t);
+    }
     if (objectArray->types) {
         types = new std::vector<ObjectType>;
+        auto typesTmp = new std::vector<ObjectType>;
         for (auto t: *(objectArray->types))
-            types->push_back(t);
+            typesTmp->push_back(t);
         for (int i = 0; i < objectArray->objects.size(); i++)
-            add(objectArray->objects[i], types->at(i));
+            addCopy(objectArray->objects[i], typesTmp->at(i), sizesTmp && sizesTmp->size() > i ? sizesTmp->at(i) : 0);
+        delete typesTmp;
     } else {
-        for (auto v: objectArray->objects)
-            add(v, objectArray->type);
+        for (int i = 0; i < objectArray->objects.size(); i++)
+            addCopy(objectArray->objects[i], objectArray->type, sizesTmp && sizesTmp->size() > i ? sizesTmp->at(i) : 0);
     }
+    if (sizesTmp)
+        delete sizesTmp;
 }
 
 size_t SMCApi::ObjectArray::size() const {
@@ -812,10 +930,10 @@ void SMCApi::ObjectArray::add(const SMCApi::Number *value, int id) {
         std::wstring error(L"wrong type");
         throw ModuleException(error);
     }
-    add((void *) value, (ObjectType) convertToObject(value->getType()), id);
+    add((void *) value, (ObjectType) convertToObject(((SMCApi::Number *) value)->getType()), id);
 }
 
-void SMCApi::ObjectArray::add(const signed char *value, int id) {
+void SMCApi::ObjectArray::add(const signed char *value, size_t size, int id) {
     if (type != ObjectType::OT_BYTES && type != ObjectType::OT_VALUE_ANY) {
         std::wstring error(L"wrong type");
         throw ModuleException(error);
@@ -860,16 +978,25 @@ const std::wstring *SMCApi::ObjectArray::getString(int id) const {
 const SMCApi::Number *SMCApi::ObjectArray::getNumber(int id) const {
     if (type != ObjectType::OT_BYTE && type != ObjectType::OT_SHORT && type != ObjectType::OT_INTEGER && type != ObjectType::OT_LONG &&
         type != ObjectType::OT_FLOAT && type != ObjectType::OT_DOUBLE && type != ObjectType::OT_BIG_INTEGER &&
-        type != ObjectType::OT_BIG_DECIMAL &&
-        (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_STRING))) {
-        std::wstring error(L"wrong type");
-        throw ModuleException(error);
+        type != ObjectType::OT_BIG_DECIMAL) {
+        bool isError = true;
+        if (type == ObjectType::OT_VALUE_ANY && types != nullptr) {
+            ObjectType vType = types->at(id);
+            isError = vType != ObjectType::OT_BYTE && vType != ObjectType::OT_SHORT && vType != ObjectType::OT_INTEGER &&
+                      vType != ObjectType::OT_LONG &&
+                      vType != ObjectType::OT_FLOAT && vType != ObjectType::OT_DOUBLE && vType != ObjectType::OT_BIG_INTEGER &&
+                      vType != ObjectType::OT_BIG_DECIMAL;
+        }
+        if (isError) {
+            std::wstring error(L"wrong type");
+            throw ModuleException(error);
+        }
     }
     return (Number *) objects[id];
 }
 
 const signed char *SMCApi::ObjectArray::getBytes(int id) const {
-    if (type != ObjectType::OT_BYTES && (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_STRING))) {
+    if (type != ObjectType::OT_BYTES && (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_BYTES))) {
         std::wstring error(L"wrong type");
         throw ModuleException(error);
     }
@@ -877,11 +1004,11 @@ const signed char *SMCApi::ObjectArray::getBytes(int id) const {
 }
 
 const size_t SMCApi::ObjectArray::getBytesCount(int id) const {
-    if (type != ObjectType::OT_BYTES && (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_STRING))) {
+    if (type != ObjectType::OT_BYTES && (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_BYTES))) {
         std::wstring error(L"wrong type");
         throw ModuleException(error);
     }
-    return sizeof((signed char *) objects[id]);
+    return id >= 0 && sizes && sizes->size() > id ? sizes->at(id) : 0;
 }
 
 const SMCApi::ObjectArray *SMCApi::ObjectArray::getObjectArray(int id) const {
@@ -900,7 +1027,7 @@ const SMCApi::ObjectElement *SMCApi::ObjectArray::getObjectElement(int id) const
     return (ObjectElement *) objects[id];
 }
 
-const SMCApi::ObjectType SMCApi::ObjectArray::getType(int id) const {
+SMCApi::ObjectType SMCApi::ObjectArray::getType(int id) {
     return id >= 0 && types && types->size() > id ? types->at(id) : type;
 }
 
@@ -910,7 +1037,7 @@ void SMCApi::ObjectArray::remove(int id) {
 
 bool SMCApi::ObjectArray::getBoolean(int id) const {
     if (type != ObjectType::OT_BOOLEAN &&
-        (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_STRING))) {
+        (type != ObjectType::OT_VALUE_ANY || (types == nullptr || types->at(id) != ObjectType::OT_BOOLEAN))) {
         std::wstring error(L"wrong type");
         throw ModuleException(error);
     }
@@ -930,4 +1057,21 @@ SMCApi::ObjectArray::~ObjectArray() {
         delete types;
         types = nullptr;
     }
+    if (sizes) {
+        delete sizes;
+        sizes = nullptr;
+    }
 }
+
+const void *SMCApi::ObjectArray::get(int id) const {
+    return objects[id];
+}
+
+SMCApi::ModuleException::ModuleException(const std::wstring &msg) : message(msg) {}
+
+const std::wstring *SMCApi::ModuleException::getMessage() const {
+    return &(this->message);
+}
+
+SMCApi::ModuleException::~ModuleException() = default;
+
