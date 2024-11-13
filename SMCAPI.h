@@ -331,8 +331,8 @@ namespace SMCApi {
     class CLASS_DECLSPEC ObjectArray {
     private:
         std::vector<void *> objects;
-        std::vector<ObjectType> *types;
-        std::vector<size_t> *sizes;
+        std::vector <ObjectType> *types;
+        std::vector <size_t> *sizes;
         ObjectType type;
 
         void add(void *pValue, ObjectType type, int id = -1, size_t size = 0);
@@ -792,7 +792,7 @@ namespace SMCApi {
          *
          * @return List of names
          */
-        virtual std::vector<std::wstring> getAllSettingNames() = 0;
+        virtual std::vector <std::wstring> getAllSettingNames() = 0;
 
         /**
          * get setting value
@@ -807,7 +807,7 @@ namespace SMCApi {
          *
          * @return List of names
          */
-        virtual std::vector<std::wstring> getAllVariableNames() = 0;
+        virtual std::vector <std::wstring> getAllVariableNames() = 0;
 
         /**
          * get variable
@@ -1038,7 +1038,7 @@ namespace SMCApi {
          * @param fields List of field names to be changed. Сan be hierarchical, in which case the names are separated by a dot.
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *createSource(ObjectArray *, std::vector<std::wstring> *) = 0;
+        virtual CFGISourceManaged *createSource(ObjectArray *, std::vector <std::wstring> *) = 0;
 
         /**
          * Update source in list
@@ -1085,7 +1085,7 @@ namespace SMCApi {
          * @param fields List of field names to be changed. Сan be hierarchical, in which case the names are separated by a dot.
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *updateSource(long, ObjectArray *, std::vector<std::wstring> *) = 0;
+        virtual CFGISourceManaged *updateSource(long, ObjectArray *, std::vector <std::wstring> *) = 0;
 
         /**
          * remove source from list
@@ -1385,7 +1385,7 @@ namespace SMCApi {
          * @param startOffset  before the first period
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilter(std::vector<std::unique_ptr<long>> *, long, long, long) = 0;
+        virtual CFGISourceFilter *createFilter(std::vector <std::unique_ptr<long>> *, long, long, long) = 0;
 
         /**
          * Create number filter and bind it to this source
@@ -1431,7 +1431,7 @@ namespace SMCApi {
          * @param paths object array paths. path - dot separated names.
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilterObjectPaths(std::vector<std::wstring> *) = 0;
+        virtual CFGISourceFilter *createFilterObjectPaths(std::vector <std::wstring> *) = 0;
 
         /**
          * Update position filter in list
@@ -1445,7 +1445,7 @@ namespace SMCApi {
          * @param startOffset  before the first period
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *updateFilter(long, std::vector<std::unique_ptr<long>> *, long, long, long) = 0;
+        virtual CFGISourceFilter *updateFilter(long, std::vector <std::unique_ptr<long>> *, long, long, long) = 0;
 
         /**
          * Update number filter in list
@@ -1491,7 +1491,7 @@ namespace SMCApi {
          * @param paths object array paths. path - dot separated names.
          * @return ISourceFilter
          */
-        virtual CFGISourceFilter *updateFilterObjectPaths(long, std::vector<std::wstring> *) = 0;
+        virtual CFGISourceFilter *updateFilterObjectPaths(long, std::vector <std::wstring> *) = 0;
 
         /**
          * remove filter from list
@@ -1673,6 +1673,14 @@ namespace SMCApi {
          * @param text - text
          */
         virtual void loggerError(std::wstring &) = 0;
+
+        /**
+         * get info by name
+         *
+         * @param key name
+         * @return IValue or null
+         */
+        virtual IValue *getInfo(const std::wstring &) = 0;
 
 //    virtual ~IConfigurationTool() {};
     };
