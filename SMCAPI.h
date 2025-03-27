@@ -1,6 +1,8 @@
-//
-// Created by pwipo on 01.11.2019.
-//
+/*
+Library (provider c++), is a part of the platform Shelf MK (Shell for modular structures, SMC platform).
+The author and copyright holder of the software package (application) Shelf MK (Shell for modular structures, SMC platform) is Ulyanov Nikolay Vladimirovich (ulianownv@mail.ru).
+The following are prohibited: changing and distributing the program code, selling/reselling it, as well as other actions and rights not expressly permitted.
+*/
 
 #include <string>
 #include <vector>
@@ -10,27 +12,35 @@
 #ifndef SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
 #define SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
 
+#ifdef _WIN32
 #ifdef _EXPORTING
 #define CLASS_DECLSPEC    __declspec(dllexport)
 #else
 #define CLASS_DECLSPEC    __declspec(dllimport)
 #endif
+#else
+#define CLASS_DECLSPEC    __attribute__((visibility("default")))
+#endif
 
 namespace SMCApi {
-
     /**
      * main exception
      *
      * @version 1.0.0
      */
     class CLASS_DECLSPEC ModuleException : public std::exception {
-    private:
         const std::wstring message;
+
     public:
-        explicit ModuleException(const std::wstring &msg);
-
-        const std::wstring *getMessage() const;
-
+        explicit ModuleException(const std::wstring& msg) noexcept;
+        /**
+         * create exception
+         * @param pMsg pointer, clear after construct
+         */
+        explicit ModuleException(const std::wstring* pMsg) noexcept;
+        // ModuleException(const SMCApi::ModuleException& e) noexcept;
+        ModuleException(const std::exception& e) noexcept;
+        const std::wstring* getMessage() const noexcept;
         ~ModuleException() override;
     };
 
@@ -72,8 +82,9 @@ namespace SMCApi {
      */
     class CLASS_DECLSPEC Number {
     private:
-        void *pValue;
+        void* pValue;
         NumberType type;
+
     public:
         explicit Number(signed char value);
 
@@ -87,9 +98,9 @@ namespace SMCApi {
 
         explicit Number(double value);
 
-        Number(NumberType type, char *valueString);
+        Number(NumberType type, char* valueString);
 
-        explicit Number(const Number *pNumber);
+        explicit Number(const Number* pNumber);
 
         ~Number();
 
@@ -166,7 +177,7 @@ namespace SMCApi {
          *
          * @return Object: String
          */
-        virtual std::wstring *getValueString() = 0;
+        virtual std::wstring* getValueString() = 0;
 
         /**
          * value as number
@@ -174,7 +185,7 @@ namespace SMCApi {
          *
          * @return Object: Number
          */
-        virtual Number *getValueNumber() = 0;
+        virtual Number* getValueNumber() = 0;
 
         /**
          * value as byte array
@@ -182,7 +193,7 @@ namespace SMCApi {
          *
          * @return Object: byte[]
          */
-        virtual signed char *getValueBytes() = 0;
+        virtual signed char* getValueBytes() = 0;
 
         /**
          * byte array length
@@ -206,9 +217,9 @@ namespace SMCApi {
          *
          * @return Object: ObjectArray
          */
-        virtual ObjectArray *getValueObjectArray() = 0;
+        virtual ObjectArray* getValueObjectArray() = 0;
 
-//    virtual ~IValue(){};
+        //    virtual ~IValue(){};
     };
 
     /**
@@ -221,67 +232,68 @@ namespace SMCApi {
     class CLASS_DECLSPEC ObjectField {
     private:
         std::wstring name;
-        void *pValue;
+        void* pValue;
         ObjectType type;
         size_t valueBytesLength;
+
     public:
-        ObjectField(const std::wstring &name);
+        ObjectField(const std::wstring& name);
 
-        ObjectField(const std::wstring &name, ObjectType type);
+        ObjectField(const std::wstring& name, ObjectType type);
 
-        ObjectField(const std::wstring &name, const std::wstring *value);
+        ObjectField(const std::wstring& name, const std::wstring* value);
 
-        ObjectField(const std::wstring &name, const Number *value);
+        ObjectField(const std::wstring& name, const Number* value);
 
-        ObjectField(const std::wstring &name, const signed char *value, size_t size);
+        ObjectField(const std::wstring& name, const signed char* value, size_t size);
 
-        ObjectField(const std::wstring &name, bool value);
+        ObjectField(const std::wstring& name, bool value);
 
-        ObjectField(const std::wstring &name, const ObjectArray *value);
+        ObjectField(const std::wstring& name, const ObjectArray* value);
 
-        ObjectField(const std::wstring &name, const ObjectElement *value);
+        ObjectField(const std::wstring& name, const ObjectElement* value);
 
-        explicit ObjectField(const ObjectField *objectField);
+        explicit ObjectField(const ObjectField* objectField);
 
-        const std::wstring &getName() const;
+        const std::wstring& getName() const;
 
-        void setName(const std::wstring &name);
+        void setName(const std::wstring& name);
 
         bool isNull();
 
         void setValueNull(ObjectType type);
 
-        void setValue(const std::wstring *value);
+        void setValue(const std::wstring* value);
 
-        void setValue(const Number *value);
+        void setValue(const Number* value);
 
-        void setValue(const signed char *value, size_t size);
+        void setValue(const signed char* value, size_t size);
 
         void setValue(bool value);
 
-        void setValue(const ObjectArray *value);
+        void setValue(const ObjectArray* value);
 
-        void setValue(const ObjectElement *value);
+        void setValue(const ObjectElement* value);
 
-        void setValue(const ObjectField *value);
+        void setValue(const ObjectField* value);
 
-        void setValue(IValue *value);
+        void setValue(IValue* value);
 
-        const std::wstring *getValueString() const;
+        const std::wstring* getValueString() const;
 
-        const Number *getValueNumber() const;
+        const Number* getValueNumber() const;
 
-        const signed char *getValueBytes() const;
+        const signed char* getValueBytes() const;
 
         size_t getBytesCount() const;
 
         bool getValueBoolean() const;
 
-        const ObjectArray *getValueObjectArray() const;
+        const ObjectArray* getValueObjectArray() const;
 
-        const ObjectElement *getValueObjectElement() const;
+        const ObjectElement* getValueObjectElement() const;
 
-        const void *getValue() const;
+        const void* getValue() const;
 
         ObjectType getType() const;
 
@@ -300,24 +312,24 @@ namespace SMCApi {
      */
     class CLASS_DECLSPEC ObjectElement {
     private:
-        std::vector<ObjectField *> fields;
-    public:
-        explicit ObjectElement(const std::vector<ObjectField *> &fields);
+        std::vector<ObjectField*> fields;
 
-        explicit ObjectElement(const ObjectElement *objectElement);
+    public:
+        explicit ObjectElement(const std::vector<ObjectField*>& fields);
+
+        explicit ObjectElement(const ObjectElement* objectElement);
 
         explicit ObjectElement();
 
-        std::vector<ObjectField *> *getFields();
+        std::vector<ObjectField*>* getFields();
 
-        ObjectField *findField(const std::wstring &name);
+        ObjectField* findField(const std::wstring& name);
 
-        ObjectField *findFieldIgnoreCase(const std::wstring &name);
+        ObjectField* findFieldIgnoreCase(const std::wstring& name);
 
         bool isSimple();
 
         ~ObjectElement();
-
     };
 
     /**
@@ -330,51 +342,51 @@ namespace SMCApi {
      */
     class CLASS_DECLSPEC ObjectArray {
     private:
-        std::vector<void *> objects;
-        std::vector <ObjectType> *types;
-        std::vector <size_t> *sizes;
+        std::vector<void*> objects;
+        std::vector<ObjectType>* types;
+        std::vector<size_t>* sizes;
         ObjectType type;
 
-        void add(void *pValue, ObjectType type, int id = -1, size_t size = 0);
+        void add(void* pValue, ObjectType type, int id = -1, size_t size = 0);
 
-        void addCopy(void *pValue, ObjectType type, size_t size = 0);
+        void addCopy(void* pValue, ObjectType type, size_t size = 0);
 
         void deleteItem(int id);
 
     public:
         explicit ObjectArray(ObjectType type);
 
-        explicit ObjectArray(const ObjectArray *objectArray);
+        explicit ObjectArray(const ObjectArray* objectArray);
 
         size_t size() const;
 
-        void add(const std::wstring *value, int id = -1);
+        void add(const std::wstring* value, int id = -1);
 
-        void add(const Number *value, int id = -1);
+        void add(const Number* value, int id = -1);
 
-        void add(const signed char *value, size_t size, int id = -1);
+        void add(const signed char* value, size_t size, int id = -1);
 
         void add(const bool value, int id = -1);
 
-        void add(const ObjectArray *value, int id = -1);
+        void add(const ObjectArray* value, int id = -1);
 
-        void add(const ObjectElement *value, int id = -1);
+        void add(const ObjectElement* value, int id = -1);
 
-        const std::wstring *getString(int id) const;
+        const std::wstring* getString(int id) const;
 
-        const Number *getNumber(int id) const;
+        const Number* getNumber(int id) const;
 
-        const signed char *getBytes(int id) const;
+        const signed char* getBytes(int id) const;
 
         const size_t getBytesCount(int id) const;
 
         bool getBoolean(int id) const;
 
-        const ObjectArray *getObjectArray(int id) const;
+        const ObjectArray* getObjectArray(int id) const;
 
-        const ObjectElement *getObjectElement(int id) const;
+        const ObjectElement* getObjectElement(int id) const;
 
-        const void *get(int id) const;
+        const void* get(int id) const;
 
         void remove(int id);
 
@@ -383,7 +395,6 @@ namespace SMCApi {
         bool isSimple();
 
         ~ObjectArray();
-
     };
 
     /**
@@ -396,19 +407,19 @@ namespace SMCApi {
     public:
         //    ValueFactory();
 
-        virtual IValue *createData(const std::wstring &) = 0;
+        virtual IValue* createData(const std::wstring&) = 0;
 
-        virtual IValue *createData(const std::string &) = 0;
+        virtual IValue* createData(const std::string&) = 0;
 
-        virtual IValue *createData(const signed char *, long) = 0;
+        virtual IValue* createData(const signed char*, long) = 0;
 
-        virtual IValue *createData(const Number *) = 0;
+        virtual IValue* createData(const Number*) = 0;
 
-        virtual IValue *createData(const IValue *) = 0;
+        virtual IValue* createData(const IValue*) = 0;
 
-        virtual IValue *createData(const ObjectArray *) = 0;
+        virtual IValue* createData(const ObjectArray*) = 0;
 
-        virtual IValue *createData(bool) = 0;
+        virtual IValue* createData(bool) = 0;
 
         //    virtual ~IValueFactory() {};
     };
@@ -452,7 +463,7 @@ namespace SMCApi {
 
         MESSAGE_ERROR/*(1000)*/,
         MESSAGE_DATA/*(1001)*/,
-        MESSAGE_LOG/*(1002)*/
+        MESSAGE_LOG /*(1002)*/
     };
 
     /**
@@ -542,7 +553,7 @@ namespace SMCApi {
          */
         virtual MessageType getMessageType() = 0;
 
-//    virtual ~IMessage() {};
+        //    virtual ~IMessage() {};
     };
 
     /**
@@ -557,7 +568,7 @@ namespace SMCApi {
          *
          * @return IMessage list
          */
-        virtual std::vector<IMessage *> *getMessages() = 0;
+        virtual std::vector<IMessage*>* getMessages() = 0;
 
         /**
          * get type
@@ -566,7 +577,7 @@ namespace SMCApi {
          */
         virtual ActionType getType() = 0;
 
-//    virtual ~IAction() {};
+        //    virtual ~IAction() {};
     };
 
     /**
@@ -581,7 +592,7 @@ namespace SMCApi {
          *
          * @return IAction list
          */
-        virtual std::vector<IAction *> *getActions() = 0;
+        virtual std::vector<IAction*>* getActions() = 0;
 
         /**
          * get type
@@ -590,7 +601,7 @@ namespace SMCApi {
          */
         virtual CommandType getType() = 0;
 
-//    virtual ~ICommand() {};
+        //    virtual ~ICommand() {};
     };
 
     /**
@@ -669,7 +680,6 @@ namespace SMCApi {
          * @return long
          */
         virtual long getMaxCountManagedConfigurations(long) = 0;
-
     };
 
     /**
@@ -690,7 +700,6 @@ namespace SMCApi {
          *  @return boolean
          */
         virtual bool isEnable() = 0;
-
     };
 
     class CLASS_DECLSPEC CFGIConfiguration;
@@ -712,7 +721,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of child configurations
          * @return CFGIConfiguration or null
          */
-        virtual CFGIConfiguration *getConfiguration(long) = 0;
+        virtual CFGIConfiguration* getConfiguration(long) = 0;
 
         /**
          * count child managed configurations
@@ -727,7 +736,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of child managed configurations
          * @return CFGIConfigurationManaged or null
          */
-        virtual CFGIConfigurationManaged *getManagedConfiguration(long) = 0;
+        virtual CFGIConfigurationManaged* getManagedConfiguration(long) = 0;
 
         /**
          * count child containers
@@ -742,7 +751,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of child containers
          * @return CFGIContainer or null
          */
-        virtual CFGIContainer *getContainer(long) = 0;
+        virtual CFGIContainer* getContainer(long) = 0;
 
         /**
          * create child container
@@ -750,7 +759,7 @@ namespace SMCApi {
          * @param name                  unique name for container
          * @return CFGIContainerManaged
          */
-        virtual CFGIContainerManaged *createContainer(const std::wstring &) = 0;
+        virtual CFGIContainerManaged* createContainer(const std::wstring&) = 0;
 
         /**
          * delete empty child container
@@ -758,7 +767,6 @@ namespace SMCApi {
          * @param id                    serial number in the list of child containers
          */
         virtual void removeContainer(long) = 0;
-
     };
 
     /**
@@ -771,7 +779,7 @@ namespace SMCApi {
          *
          *  @return CFGIModule
          */
-        virtual CFGIModule *getModule() = 0;
+        virtual CFGIModule* getModule() = 0;
 
         /**
          * get name
@@ -786,36 +794,6 @@ namespace SMCApi {
          *  @return string
          */
         virtual std::wstring getDescription() = 0;
-
-        /**
-         * get all settings
-         *
-         * @return List of names
-         */
-        virtual std::vector <std::wstring> getAllSettingNames() = 0;
-
-        /**
-         * get setting value
-         *
-         * @param key setting name
-         * @return IValue or null
-         */
-        virtual IValue *getSetting(const std::wstring &) = 0;
-
-        /**
-         * get all variables
-         *
-         * @return List of names
-         */
-        virtual std::vector <std::wstring> getAllVariableNames() = 0;
-
-        /**
-         * get variable
-         *
-         * @param key variable name
-         * @return IValue or null
-         */
-        virtual IValue *getVariable(const std::wstring &) = 0;
 
         /**
          * get buffer size
@@ -844,7 +822,6 @@ namespace SMCApi {
          * @return boolean
          */
         virtual bool isActive() = 0;
-
     };
 
     class CLASS_DECLSPEC CFGIExecutionContextManaged;
@@ -856,7 +833,37 @@ namespace SMCApi {
          *
          * @param name                   new name
          */
-        virtual void setName(std::wstring &) = 0;
+        virtual void setName(const std::wstring&) = 0;
+
+        /**
+         * get all settings
+         *
+         * @return List of names
+         */
+        virtual std::vector<std::wstring> getAllSettingNames() = 0;
+
+        /**
+         * get setting value
+         *
+         * @param key setting name
+         * @return IValue or null
+         */
+        virtual IValue* getSetting(const std::wstring&) = 0;
+
+        /**
+         * get all variables
+         *
+         * @return List of names
+         */
+        virtual std::vector<std::wstring> getAllVariableNames() = 0;
+
+        /**
+         * get variable
+         *
+         * @param key variable name
+         * @return IValue or null
+         */
+        virtual IValue* getVariable(const std::wstring&) = 0;
 
         /**
          * change setting
@@ -864,7 +871,7 @@ namespace SMCApi {
          * @param key                    setting name
          * @param value                  value object (String, Number, byte[])
          */
-        virtual void setSetting(const std::wstring &, IValue *) = 0;
+        virtual void setSetting(const std::wstring&, IValue*) = 0;
 
         /**
          * change variable
@@ -872,14 +879,14 @@ namespace SMCApi {
          * @param key                   variable name
          * @param value                 value object (String, Number, byte[])
          */
-        virtual void setVariable(const std::wstring &, IValue *) = 0;
+        virtual void setVariable(const std::wstring&, IValue*) = 0;
 
         /**
          * remove variable
          *
          * @param key                   variable name
          */
-        virtual void removeVariable(const std::wstring &) = 0;
+        virtual void removeVariable(const std::wstring&) = 0;
 
         /**
          * change buffer size
@@ -908,7 +915,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of Execution Contexts
          * @return CFGIExecutionContextManaged or null
          */
-        virtual CFGIExecutionContextManaged *getExecutionContext(long) = 0;
+        virtual CFGIExecutionContextManaged* getExecutionContext(long) = 0;
 
         /**
          * create execution context and bind it to this configuration
@@ -918,7 +925,7 @@ namespace SMCApi {
          * @param maxWorkInterval       max work interval. if -1, no time limit. in milliseconds
          * @return CFGIExecutionContextManaged
          */
-        virtual CFGIExecutionContextManaged *createExecutionContext(const std::wstring &, const std::wstring &, long) = 0;
+        virtual CFGIExecutionContextManaged* createExecutionContext(const std::wstring&, const std::wstring&, long) = 0;
 
         /**
          * update execution context in list
@@ -929,7 +936,7 @@ namespace SMCApi {
          * @param maxWorkInterval max work interval. if -1, no time limit. in milliseconds
          * @return CFGIExecutionContextManaged
          */
-        virtual CFGIExecutionContextManaged *updateExecutionContext(long, const std::wstring &, const std::wstring &, long) = 0;
+        virtual CFGIExecutionContextManaged* updateExecutionContext(long, const std::wstring&, const std::wstring&, long) = 0;
 
         /**
          * delete execution context
@@ -943,8 +950,7 @@ namespace SMCApi {
 
          * @return CFGIContainerManaged
          */
-        virtual CFGIContainerManaged *getContainer() = 0;
-
+        virtual CFGIContainerManaged* getContainer() = 0;
     };
 
     class CLASS_DECLSPEC CFGISource;
@@ -971,8 +977,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of sources
          * @return CFGISource or null
          */
-        virtual CFGISource *getSource(long) = 0;
-
+        virtual CFGISource* getSource(long) = 0;
     };
 
     class CLASS_DECLSPEC CFGIExecutionContext;
@@ -995,7 +1000,7 @@ namespace SMCApi {
          * @param eventDriven           if true, then source is event driven
          * @return CFGISourceManaged
          */
-        virtual CFGISourceManaged *createSourceConfiguration(CFGIConfiguration *, SourceGetType, long, bool) = 0;
+        virtual CFGISourceManaged* createSourceConfiguration(CFGIConfiguration*, SourceGetType, long, bool) = 0;
 
         /**
          * create source and bind it to this execution context
@@ -1008,7 +1013,7 @@ namespace SMCApi {
          * @param eventDriven           if true, then source is event driven
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *createSourceExecutionContext(CFGIExecutionContext *, SourceGetType, long, bool) = 0;
+        virtual CFGISourceManaged* createSourceExecutionContext(CFGIExecutionContext*, SourceGetType, long, bool) = 0;
 
         /**
          * create source and bind it to this execution context
@@ -1018,7 +1023,7 @@ namespace SMCApi {
          * @param value                 value (String, Number or byte array)
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *createSourceValue(IValue *) = 0;
+        virtual CFGISourceManaged* createSourceValue(IValue*) = 0;
 
         /**
          * create source and bind it to this execution context
@@ -1027,7 +1032,7 @@ namespace SMCApi {
          *
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *createSourceMultipart() = 0;
+        virtual CFGISourceManaged* createSourceMultipart() = 0;
 
         /**
          * Create source and bind it to this execution context
@@ -1038,7 +1043,7 @@ namespace SMCApi {
          * @param fields List of field names to be changed. Сan be hierarchical, in which case the names are separated by a dot.
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *createSource(ObjectArray *, std::vector <std::wstring> *) = 0;
+        virtual CFGISourceManaged* createSource(ObjectArray*, std::vector<std::wstring>*) = 0;
 
         /**
          * Update source in list
@@ -1051,7 +1056,7 @@ namespace SMCApi {
          * @param eventDriven   if set, then source is event driven
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *updateSourceConfiguration(long, CFGIConfiguration *, SourceGetType, long, bool) = 0;
+        virtual CFGISourceManaged* updateSourceConfiguration(long, CFGIConfiguration*, SourceGetType, long, bool) = 0;
 
         /**
          * Update source in list
@@ -1064,7 +1069,7 @@ namespace SMCApi {
          * @param eventDriven      if set, then source is event driven
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *updateSourceExecutionContext(long, CFGIExecutionContext *, SourceGetType, long, bool) = 0;
+        virtual CFGISourceManaged* updateSourceExecutionContext(long, CFGIExecutionContext*, SourceGetType, long, bool) = 0;
 
         /**
          * Update source in list
@@ -1074,7 +1079,7 @@ namespace SMCApi {
          * @param value value
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *updateSourceValue(long, IValue *) = 0;
+        virtual CFGISourceManaged* updateSourceValue(long, IValue*) = 0;
 
         /**
          * Update source in list
@@ -1085,7 +1090,7 @@ namespace SMCApi {
          * @param fields List of field names to be changed. Сan be hierarchical, in which case the names are separated by a dot.
          * @return CFGISourceManage
          */
-        virtual CFGISourceManaged *updateSource(long, ObjectArray *, std::vector <std::wstring> *) = 0;
+        virtual CFGISourceManaged* updateSource(long, ObjectArray*, std::vector<std::wstring>*) = 0;
 
         /**
          * remove source from list
@@ -1100,7 +1105,7 @@ namespace SMCApi {
          * @param id serial number in the list of sources
          * @return CFGISourceListManaged or null
          */
-        virtual CFGISourceListManaged *getSourceListManaged(long) = 0;
+        virtual CFGISourceListManaged* getSourceListManaged(long) = 0;
 
         /**
          * get managed source
@@ -1108,8 +1113,7 @@ namespace SMCApi {
          * @param id serial number in the list of sources
          * @return CFGISourceManaged or null
          */
-        virtual CFGISourceManaged *getSourceManaged(long) = 0;
-
+        virtual CFGISourceManaged* getSourceManaged(long) = 0;
     };
 
     /**
@@ -1123,7 +1127,7 @@ namespace SMCApi {
          * get configuration
          * @return CFGIConfiguration
          */
-        virtual CFGIConfiguration *getConfiguration() = 0;
+        virtual CFGIConfiguration* getConfiguration() = 0;
 
         /**
          * get name
@@ -1161,7 +1165,6 @@ namespace SMCApi {
          * @return type or empty for default/any type
          */
         virtual std::wstring getType() = 0;
-
     };
 
     /**
@@ -1176,7 +1179,7 @@ namespace SMCApi {
          *
          * @param name                  unique name for configuration
          */
-        virtual void setName(std::wstring &) = 0;
+        virtual void setName(const std::wstring&) = 0;
 
         /**
          * change max work interval
@@ -1205,7 +1208,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of Execution Contexts
          * @return CFGIExecutionContext or null
          */
-        virtual CFGIExecutionContext *getExecutionContext(long) = 0;
+        virtual CFGIExecutionContext* getExecutionContext(long) = 0;
 
         /**
          * insert execution context in list
@@ -1214,7 +1217,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of Execution Contexts
          * @param executionContext      execution context
          */
-        virtual void insertExecutionContext(long, CFGIExecutionContext *) = 0;
+        virtual void insertExecutionContext(long, CFGIExecutionContext*) = 0;
 
         /**
          * update execution context in list
@@ -1222,7 +1225,7 @@ namespace SMCApi {
          * @param id               serial number in the list of Execution Contexts
          * @param executionContext execution context
          */
-        virtual void updateExecutionContext(long, CFGIExecutionContext *) = 0;
+        virtual void updateExecutionContext(long, CFGIExecutionContext*) = 0;
 
         /**
          * remove execution context from list
@@ -1244,7 +1247,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of Managed configurations
          * @return CFGIConfiguration or null
          */
-        virtual CFGIConfiguration *getManagedConfiguration(long) = 0;
+        virtual CFGIConfiguration* getManagedConfiguration(long) = 0;
 
         /**
          * insert configuration in list
@@ -1253,7 +1256,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of Managed configurations
          * @param configuration         configuration
          */
-        virtual void insertManagedConfiguration(long, CFGIConfiguration *) = 0;
+        virtual void insertManagedConfiguration(long, CFGIConfiguration*) = 0;
 
         /**
          * update configuration in list
@@ -1261,7 +1264,7 @@ namespace SMCApi {
          * @param id            serial number in the list of Managed configurations
          * @param configuration configuration
          */
-        virtual void updateManagedConfiguration(long, CFGIConfiguration *) = 0;
+        virtual void updateManagedConfiguration(long, CFGIConfiguration*) = 0;
 
         /**
          * remove configuration from list
@@ -1275,8 +1278,7 @@ namespace SMCApi {
          *
          * @param type type name or empty for default/any type (if exist)
          */
-        virtual void setType(std::wstring &) = 0;
-
+        virtual void setType(const std::wstring&) = 0;
     };
 
     /**
@@ -1311,8 +1313,7 @@ namespace SMCApi {
          * SFT_STRING_EQUAL: boolean* (type, if true then need equals, also, not equal), std::wstring* (value for compare)
          * SFT_STRING_CONTAIN: boolean* (type, if true then need contain, also, not contain), std::wstring* (value)
          */
-        virtual void *getParam(long) = 0;
-
+        virtual void* getParam(long) = 0;
     };
 
     /**
@@ -1348,7 +1349,7 @@ namespace SMCApi {
          * ST_MULTIPART: null
          * ST_CALLER_RELATIVE_NAME: string (caller level cfg name)
          */
-        virtual void *getParam(long) = 0;
+        virtual void* getParam(long) = 0;
 
         /**
          * count filters
@@ -1363,8 +1364,7 @@ namespace SMCApi {
          * @param id serial number in the list of Filters
          * @return CFGISourceFilter or null
          */
-        virtual CFGISourceFilter *getFilter(long) = 0;
-
+        virtual CFGISourceFilter* getFilter(long) = 0;
     };
 
     /**
@@ -1385,7 +1385,7 @@ namespace SMCApi {
          * @param startOffset  before the first period
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilter(std::vector <std::unique_ptr<long>> *, long, long, long) = 0;
+        virtual CFGISourceFilter* createFilter(std::vector<std::unique_ptr<long>>*, long, long, long) = 0;
 
         /**
          * Create number filter and bind it to this source
@@ -1397,7 +1397,7 @@ namespace SMCApi {
          * @param max inclusive
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilter(std::wstring &, double, double) = 0;
+        virtual CFGISourceFilter* createFilter(const std::wstring&, double, double) = 0;
 
         /**
          * Create string equal filter and bind it to this source
@@ -1409,7 +1409,7 @@ namespace SMCApi {
          * @param value      value for compare
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilterStrEq(std::wstring &, bool, std::wstring &) = 0;
+        virtual CFGISourceFilter* createFilterStrEq(const std::wstring&, bool, const std::wstring&) = 0;
 
         /**
          * Create string contain filter and bind it to this source
@@ -1421,7 +1421,7 @@ namespace SMCApi {
          * @param value       value for compare
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilterStrContain(std::wstring &, bool, std::wstring &) = 0;
+        virtual CFGISourceFilter* createFilterStrContain(const std::wstring&, bool, const std::wstring&) = 0;
 
         /**
          * Create object paths filter and bind it to this source
@@ -1431,7 +1431,7 @@ namespace SMCApi {
          * @param paths object array paths. path - dot separated names.
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *createFilterObjectPaths(std::vector <std::wstring> *) = 0;
+        virtual CFGISourceFilter* createFilterObjectPaths(std::vector<std::wstring>*) = 0;
 
         /**
          * Update position filter in list
@@ -1445,7 +1445,7 @@ namespace SMCApi {
          * @param startOffset  before the first period
          * @return CFGISourceFilter
          */
-        virtual CFGISourceFilter *updateFilter(long, std::vector <std::unique_ptr<long>> *, long, long, long) = 0;
+        virtual CFGISourceFilter* updateFilter(long, std::vector<std::unique_ptr<long>>*, long, long, long) = 0;
 
         /**
          * Update number filter in list
@@ -1457,7 +1457,7 @@ namespace SMCApi {
          * @param max       inclusive
          * @return ISourceFilter
          */
-        virtual CFGISourceFilter *updateFilter(long, std::wstring &, double, double) = 0;
+        virtual CFGISourceFilter* updateFilter(long, const std::wstring&, double, double) = 0;
 
         /**
          * Update string equal filter in list
@@ -1469,7 +1469,7 @@ namespace SMCApi {
          * @param value      value for compare
          * @return ISourceFilter
          */
-        virtual CFGISourceFilter *updateFilterStrEq(long, std::wstring &, bool, std::wstring &) = 0;
+        virtual CFGISourceFilter* updateFilterStrEq(long, const std::wstring&, bool, const std::wstring&) = 0;
 
         /**
          * Update string contain filter in list
@@ -1481,7 +1481,7 @@ namespace SMCApi {
          * @param value       value for compare
          * @return ISourceFilter
          */
-        virtual CFGISourceFilter *updateFilterStrContain(long, std::wstring &, bool, std::wstring &) = 0;
+        virtual CFGISourceFilter* updateFilterStrContain(long, const std::wstring&, bool, const std::wstring&) = 0;
 
         /**
          * Update object paths filter in list
@@ -1491,7 +1491,7 @@ namespace SMCApi {
          * @param paths object array paths. path - dot separated names.
          * @return ISourceFilter
          */
-        virtual CFGISourceFilter *updateFilterObjectPaths(long, std::vector <std::wstring> *) = 0;
+        virtual CFGISourceFilter* updateFilterObjectPaths(long, std::vector<std::wstring>*) = 0;
 
         /**
          * remove filter from list
@@ -1499,7 +1499,6 @@ namespace SMCApi {
          * @param id serial number in the list of filters
          */
         virtual void removeFilter(long) = 0;
-
     };
 
     /**
@@ -1535,14 +1534,14 @@ namespace SMCApi {
          *
          * @return files if it folder
          */
-        virtual std::vector<IFileTool *> *getChildrens() = 0;
+        virtual std::vector<IFileTool*>* getChildrens() = 0;
 
         /**
          * reed all file
          *
          * @return InputStream
          */
-        virtual char *getData() = 0;
+        virtual char* getData() = 0;
 
         /**
          * file size
@@ -1557,9 +1556,9 @@ namespace SMCApi {
          *
          * @return handler or null
          */
-        virtual void *loadAsLibrary() = 0;
+        virtual void* loadAsLibrary() = 0;
 
-//    virtual ~IFileTool() {};
+        //    virtual ~IFileTool() {};
     };
 
     /**
@@ -1570,12 +1569,42 @@ namespace SMCApi {
     class CLASS_DECLSPEC IConfigurationTool {
     public:
         /**
+         * get all settings
+         *
+         * @return List of names
+         */
+        virtual std::vector<std::wstring> getAllSettingNames() = 0;
+
+        /**
+         * get setting value
+         *
+         * @param key setting name
+         * @return IValue or null
+         */
+        virtual IValue* getSetting(const std::wstring&) = 0;
+
+        /**
+         * get all variables
+         *
+         * @return List of names
+         */
+        virtual std::vector<std::wstring> getAllVariableNames() = 0;
+
+        /**
+         * get variable
+         *
+         * @param key variable name
+         * @return IValue or null
+         */
+        virtual IValue* getVariable(const std::wstring&) = 0;
+
+        /**
          * change variable
          *
          * @param key                   variable name
          * @param value                 value object (String, Number, byte[])
          */
-        virtual void setVariable(const std::wstring &, IValue *) = 0;
+        virtual void setVariable(const std::wstring&, IValue*) = 0;
 
         /**
          * check is variable has changed from last execution or last check
@@ -1584,7 +1613,7 @@ namespace SMCApi {
          * @param key                   variable name
          * @return
          */
-        virtual bool isVariableChanged(const std::wstring &) = 0;
+        virtual bool isVariableChanged(const std::wstring&) = 0;
 
         /**
          * remove variable
@@ -1592,7 +1621,7 @@ namespace SMCApi {
          * @param key                   variable name
          * @return
          */
-        virtual void removeVariable(const std::wstring &) = 0;
+        virtual void removeVariable(const std::wstring&) = 0;
 
         /**
          * get module folder
@@ -1600,7 +1629,7 @@ namespace SMCApi {
          *
          * @return
          */
-        virtual IFileTool *getHomeFolder() = 0;
+        virtual IFileTool* getHomeFolder() = 0;
 
         /**
          * get full path to work directory
@@ -1624,55 +1653,55 @@ namespace SMCApi {
          * @param id                    serial number in the list of Execution Contexts
          * @return CFGIExecutionContext or null
          */
-        virtual CFGIExecutionContext *getExecutionContext(long) = 0;
+        virtual CFGIExecutionContext* getExecutionContext(long) = 0;
 
         /**
          * get configuration related to this launch
          * @return CFGIConfiguration
          */
-        virtual CFGIConfiguration *getConfiguration() = 0;
+        virtual CFGIConfiguration* getConfiguration() = 0;
 
         /**
          * get container
 
          * @return CFGIContainerManaged
          */
-        virtual CFGIContainerManaged *getContainer() = 0;
+        virtual CFGIContainerManaged* getContainer() = 0;
 
         /**
          * logger trace
          *
          * @param text - text
          */
-        virtual void loggerTrace(std::wstring &) = 0;
+        virtual void loggerTrace(const std::wstring&) = 0;
 
         /**
          * logger debug
          *
          * @param text - text
          */
-        virtual void loggerDebug(std::wstring &) = 0;
+        virtual void loggerDebug(const std::wstring&) = 0;
 
         /**
          * logger info
          *
          * @param text - text
          */
-        virtual void loggerInfo(std::wstring &) = 0;
+        virtual void loggerInfo(const std::wstring&) = 0;
 
         /**
          * logger warn
          *
          * @param text - text
          */
-        virtual void loggerWarn(std::wstring &) = 0;
+        virtual void loggerWarn(const std::wstring&) = 0;
 
         /**
          * logger error
          *
          * @param text - text
          */
-        virtual void loggerError(std::wstring &) = 0;
+        virtual void loggerError(const std::wstring&) = 0;
 
         /**
          * get info by name
@@ -1680,9 +1709,9 @@ namespace SMCApi {
          * @param key name
          * @return IValue or null
          */
-        virtual IValue *getInfo(const std::wstring &) = 0;
+        virtual IValue* getInfo(const std::wstring&) = 0;
 
-//    virtual ~IConfigurationTool() {};
+        //    virtual ~IConfigurationTool() {};
     };
 
     /**
@@ -1704,7 +1733,7 @@ namespace SMCApi {
          *
          * @return CFGIModule or null
          */
-        virtual CFGIModule *getModule(long) = 0;
+        virtual CFGIModule* getModule(long) = 0;
 
         /**
          * count managed configurations
@@ -1719,7 +1748,7 @@ namespace SMCApi {
          * @param id                    serial number in the list of Managed configurations
          * @return CFGIConfigurationManaged or null
          */
-        virtual CFGIConfigurationManaged *getManagedConfiguration(long) = 0;
+        virtual CFGIConfigurationManaged* getManagedConfiguration(long) = 0;
 
         /**
          * create configuration and add it in list of managed configurations
@@ -1730,7 +1759,7 @@ namespace SMCApi {
          * @param name                  unique name for configuration
          * @return CFGIConfigurationManaged
          */
-        virtual CFGIConfigurationManaged *createConfiguration(long, CFGIContainer *, CFGIModule *, const std::wstring &) = 0;
+        virtual CFGIConfigurationManaged* createConfiguration(long, CFGIContainer*, CFGIModule*, const std::wstring&) = 0;
 
         /**
          * remove managed configuration
@@ -1744,7 +1773,6 @@ namespace SMCApi {
          * in the end of execution called automatically.
          */
         virtual void clearCache() = 0;
-
     };
 
     /**
@@ -1770,7 +1798,7 @@ namespace SMCApi {
          * @param managedId             serial number in the list of Managed execution contexts
          * @param values                list of values for create dummy messages from this process, or null
          */
-        virtual void executeNow(CommandType, long, std::vector<IValue *> *) = 0;
+        virtual void executeNow(CommandType, long, std::vector<IValue*>*) = 0;
 
         /**
          * throw new command to managed execution context
@@ -1784,9 +1812,9 @@ namespace SMCApi {
          * @param maxWorkInterval       define max work interval of new thread (in tacts)
          * @return return id of thread
          */
-        virtual long long int executeParallel(CommandType, long, std::vector<IValue *> *, long, long) = 0;
+        virtual long long int executeParallel(CommandType, long, std::vector<IValue*>*, long, long) = 0;
 
-//    virtual bool isExecute(long) = 0;
+        //    virtual bool isExecute(long) = 0;
 
         /**
          * check is thread alive
@@ -1803,7 +1831,7 @@ namespace SMCApi {
          * @param managedId             serial number in the list of Managed execution contexts
          * @return only DATA messages
          */
-        virtual std::vector<IAction *> *getMessagesFromExecuted(long) = 0;
+        virtual std::vector<IAction*>* getMessagesFromExecuted(long) = 0;
 
         /**
          * get data from managed execution context
@@ -1814,7 +1842,7 @@ namespace SMCApi {
          * @param managedId             serial number in the list of Managed execution contexts
          * @return only DATA messages
          */
-        virtual std::vector<IAction *> *getMessagesFromExecuted(long long int, long) = 0;
+        virtual std::vector<IAction*>* getMessagesFromExecuted(long long int, long) = 0;
 
         /**
          * work as getMessagesFromExecuted
@@ -1822,7 +1850,7 @@ namespace SMCApi {
          * @param managedId
          * @return commands
          */
-        virtual std::vector<ICommand *> *getCommandsFromExecuted(long) = 0;
+        virtual std::vector<ICommand*>* getCommandsFromExecuted(long) = 0;
 
         /**
          * work as getMessagesFromExecuted
@@ -1831,7 +1859,7 @@ namespace SMCApi {
          * @param managedId
          * @return commands
          */
-        virtual std::vector<ICommand *> *getCommandsFromExecuted(long long int, long) = 0;
+        virtual std::vector<ICommand*>* getCommandsFromExecuted(long long int, long) = 0;
 
         /**
          * after executeParallel and work with him, need to release thread
@@ -1848,13 +1876,13 @@ namespace SMCApi {
          */
         virtual void releaseThreadCache(long long int) = 0;
 
-//    virtual bool isError(long) = 0;
+        //    virtual bool isError(long) = 0;
 
-//    virtual bool isProcessReady(long) = 0;
+        //    virtual bool isProcessReady(long) = 0;
 
-//    virtual bool isProcessExist(long) = 0;
+        //    virtual bool isProcessExist(long) = 0;
 
-//    virtual ~IFlowControlTool() {};
+        //    virtual ~IFlowControlTool() {};
 
         /**
          * get managed execution context
@@ -1862,8 +1890,7 @@ namespace SMCApi {
          * @param id serial number in the list of Managed execution contexts
          * @return CFGIExecutionContext or null
          */
-        virtual CFGIExecutionContext *getManagedExecutionContext(int id) = 0;
-
+        virtual CFGIExecutionContext* getManagedExecutionContext(int id) = 0;
     };
 
     /**
@@ -1879,7 +1906,7 @@ namespace SMCApi {
         *
         * @param value                  object (type String, Number, byte[])
         */
-        virtual void addMessage(IValue *) = 0;
+        virtual void addMessage(IValue*) = 0;
 
         /**
          * emit error message
@@ -1887,7 +1914,7 @@ namespace SMCApi {
          *
          * @param value                 object (type String, Number, byte[])
          */
-        virtual void addError(IValue *) = 0;
+        virtual void addError(IValue*) = 0;
 
         /**
          * emit log message
@@ -1895,7 +1922,7 @@ namespace SMCApi {
          *
          * @param value object
          */
-        virtual void addLog(std::wstring &) = 0;
+        virtual void addLog(const std::wstring&) = 0;
 
         /**
          * get count commands in source
@@ -1911,7 +1938,7 @@ namespace SMCApi {
          * @param executionContext      managed execution context
          * @return count
          */
-        virtual long countCommands(CFGIExecutionContextManaged *) = 0;
+        virtual long countCommands(CFGIExecutionContextManaged*) = 0;
 
         /**
          * get Process Actions from source
@@ -1919,7 +1946,7 @@ namespace SMCApi {
          * @param sourceId              serial number in the list of Sources
          * @return only DATA messages
          */
-        virtual std::vector<IAction *> *getMessages(long) = 0;
+        virtual std::vector<IAction*>* getMessages(long) = 0;
 
         /**
          * get Process Actions from source
@@ -1930,7 +1957,7 @@ namespace SMCApi {
          * @param toIndex               end serial number in the list of commands in source (inclusive)
          * @return only DATA messages
          */
-        virtual std::vector<IAction *> *getMessages(long, long, long) = 0;
+        virtual std::vector<IAction*>* getMessages(long, long, long) = 0;
 
         /**
          * get Commands from source
@@ -1938,7 +1965,7 @@ namespace SMCApi {
          * @param sourceId              serial number in the list of Sources
          * @return commands
          */
-        virtual std::vector<ICommand *> *getCommands(long) = 0;
+        virtual std::vector<ICommand*>* getCommands(long) = 0;
 
         /**
          * get Commands from source
@@ -1949,7 +1976,7 @@ namespace SMCApi {
          * @param toIndex               end serial number in the list of commands in source
          * @return commands
          */
-        virtual std::vector<ICommand *> *getCommands(long, long, long) = 0;
+        virtual std::vector<ICommand*>* getCommands(long, long, long) = 0;
 
         /**
          * get Commands from managed execution context
@@ -1960,7 +1987,7 @@ namespace SMCApi {
          * @param toIndex               end serial number in the list of commands in source
          * @return commands
          */
-        virtual std::vector<ICommand *> *getCommands(CFGIExecutionContextManaged *, long, long) = 0;
+        virtual std::vector<ICommand*>* getCommands(CFGIExecutionContextManaged*, long, long) = 0;
 
         /**
          * is Process Actions has errors
@@ -1968,21 +1995,21 @@ namespace SMCApi {
          * @param action
          * @return
          */
-        virtual bool isError(IAction *action) = 0;
+        virtual bool isError(IAction* action) = 0;
 
         /**
          * get tool for work with managed configurations
          *
          * @return
          */
-        virtual IConfigurationControlTool *getConfigurationControlTool() = 0;
+        virtual IConfigurationControlTool* getConfigurationControlTool() = 0;
 
         /**
          * get tool for throw new command to managed execution contexts and get result
          *
          * @return
          */
-        virtual IFlowControlTool *getFlowControlTool() = 0;
+        virtual IFlowControlTool* getFlowControlTool() = 0;
 
         /**
          * check is need stop process work immediately
@@ -1996,9 +2023,9 @@ namespace SMCApi {
          * get execution context related to this launch
          * @return CFGIExecutionContext
          */
-        virtual CFGIExecutionContext *getExecutionContext() = 0;
+        virtual CFGIExecutionContext* getExecutionContext() = 0;
 
-//    virtual ~IExecutionContextTool() {};
+        //    virtual ~IExecutionContextTool() {};
     };
 
     /**
@@ -2014,7 +2041,7 @@ namespace SMCApi {
          * @param                       configurationTool
          * @throws ModuleException
          */
-        virtual void start(IConfigurationTool *, IValueFactory *) = 0;
+        virtual void start(IConfigurationTool*, IValueFactory*) = 0;
 
         /**
          * main method. call every time when need execute
@@ -2023,7 +2050,7 @@ namespace SMCApi {
          * @param                       executionContextTool
          * @throws ModuleException
          */
-        virtual void process(IConfigurationTool *, IExecutionContextTool *, IValueFactory *) = 0;
+        virtual void process(IConfigurationTool*, IExecutionContextTool*, IValueFactory*) = 0;
 
         /**
          * call then need update
@@ -2031,7 +2058,7 @@ namespace SMCApi {
          * @param                       configurationTool
          * @throws ModuleException
          */
-        virtual void update(IConfigurationTool *, IValueFactory *) = 0;
+        virtual void update(IConfigurationTool*, IValueFactory*) = 0;
 
         /**
          * call once per process on stop
@@ -2039,9 +2066,8 @@ namespace SMCApi {
          * @param                       configurationTool
          * @throws ModuleException
          */
-        virtual void stop(IConfigurationTool *, IValueFactory *) = 0;
+        virtual void stop(IConfigurationTool*, IValueFactory*) = 0;
     };
-
 }
 
 #endif //SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
