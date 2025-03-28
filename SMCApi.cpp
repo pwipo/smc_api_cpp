@@ -1075,14 +1075,14 @@ const void* SMCApi::ObjectArray::get(int id) const {
     return objects[id];
 }
 
-SMCApi::ModuleException::ModuleException(const std::wstring& msg) noexcept : exception("Error!"), message(msg) {
+SMCApi::ModuleException::ModuleException(const std::wstring& msg) noexcept : runtime_error("Error!"), message(msg) {
 }
 
-SMCApi::ModuleException::ModuleException(const std::wstring* pMsg) noexcept: exception("Error!"), message(*pMsg) {
+SMCApi::ModuleException::ModuleException(const std::wstring* pMsg) noexcept: runtime_error("Error!"), message(*pMsg) {
     delete pMsg;
 }
 
-SMCApi::ModuleException::ModuleException(const std::exception& e) noexcept: exception(e.what()), message(static_cast<ModuleException>(e).message) {
+SMCApi::ModuleException::ModuleException(const std::exception& e) noexcept: runtime_error(e.what()), message(static_cast<ModuleException>(e).message) {
 }
 
 // SMCApi::ModuleException::ModuleException(const SMCApi::ModuleException& e) noexcept: exception(e.what()), message(e.message) {

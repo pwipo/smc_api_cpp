@@ -8,6 +8,7 @@ The following are prohibited: changing and distributing the program code, sellin
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <stdexcept>
 
 #ifndef SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
 #define SMCMODULEDEFINITIONPROVIDER_SMCAPI_H
@@ -28,7 +29,7 @@ namespace SMCApi {
      *
      * @version 1.0.0
      */
-    class CLASS_DECLSPEC ModuleException : public std::exception {
+    class CLASS_DECLSPEC ModuleException : public std::runtime_error {
         const std::wstring message;
 
     public:
