@@ -767,6 +767,24 @@ namespace SMCApi {
          * @param id                    serial number in the list of child containers
          */
         virtual void removeContainer(long) = 0;
+
+        /**
+         * get child configuration as managed
+         * similar getConfiguration
+         *
+         * @param id                    serial number in the list of child configurations
+         * @return CFGIConfigurationManaged or null
+         */
+        virtual CFGIConfiguration* getConfigurationManaged(long) = 0;
+
+        /**
+         * get child container as managed
+         * similar getContainer
+         *
+         * @param id                    serial number in the list of child containers
+         * @return CFGIContainerManaged or null
+         */
+        virtual CFGIContainer* getContainerManaged(long) = 0;
     };
 
     /**
